@@ -8,25 +8,25 @@ lat_min = 20.0              # Latencia minima
 lat_max = 100.0             # Latencia maxima
 
 
-#def dba():
-demandas_onu = np.random.uniform(20, 600, num_onu)
-posicion_max = np.argmax(demandas_onu) + 1  # para saber cual ONU es la que tiene mayor demanda, por lo que esta presenta mayor congestión
-# Imprimir demandas de las ONU/ONT
-print("Demandas de las ONU/ONT (Mbps):", demandas_onu)
-print("ONU con mayor demanda:", posicion_max)
-demanda_total = np.sum(demandas_onu)
+def dba():
+    demandas_onu = np.random.uniform(20, 600, num_onu)
+    posicion_max = np.argmax(demandas_onu) + 1  # para saber cual ONU es la que tiene mayor demanda, por lo que esta presenta mayor congestión
+    # Imprimir demandas de las ONU/ONT
+    print("Demandas de las ONU/ONT (Mbps):", demandas_onu)
+    print("ONU con mayor demanda:", posicion_max)
+    demanda_total = np.sum(demandas_onu)
 
-if demanda_total > ancho_banda_total:
-    variacion = np.random.uniform(0.5, 1.5, num_onu) # variable hecha para variar las asignaciones, en pos de simular medidas hechas por la OLT para asignar el ancho de banda
-    asignaciones = (demandas_onu / demanda_total) * ancho_banda_total * variacion
-    asignaciones = (asignaciones / np.sum(asignaciones)) * ancho_banda_total
-else:
-    asignaciones = demandas_onu
+    if demanda_total > ancho_banda_total:
+        variacion = np.random.uniform(0.5, 1.5, num_onu) # variable hecha para variar las asignaciones, en pos de simular medidas hechas por la OLT para asignar el ancho de banda
+        asignaciones = (demandas_onu / demanda_total) * ancho_banda_total * variacion
+        asignaciones = (asignaciones / np.sum(asignaciones)) * ancho_banda_total
+    else:
+        asignaciones = demandas_onu
 
-print("Asignaciones de ancho de banda (Mbps):", asignaciones)
-print("Suma de las asignaciones:", np.sum(asignaciones).round(3))
-latencias = (demandas_onu / asignaciones) * lat_min # calculo de latencias
-print("Latencia cada ONU:", latencias)
+    print("Asignaciones de ancho de banda (Mbps):", asignaciones)
+    print("Suma de las asignaciones:", np.sum(asignaciones).round(3))
+    latencias = (demandas_onu / asignaciones) * lat_min # calculo de latencias
+    print("Latencia cada ONU:", latencias)
 
 
 
