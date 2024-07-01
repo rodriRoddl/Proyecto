@@ -19,7 +19,7 @@ package = 15000 #largo de un paquete de datos en bits
 distancias = np.random.randint(5, 40, size=num_onu)
 mu = np.log(200**2 / np.sqrt(20**2 + 200**2))
 sigma = np.sqrt(np.log(1 + (20**2 / 200**2)))
-canal=100
+canal=50
 def dba():
     demandas_onu = np.random.lognormal(mu, sigma, num_onu)
     posicion_max = np.argmax(demandas_onu)  # Para saber cuál ONU es la que tiene mayor demanda
@@ -67,7 +67,7 @@ def InputEvent(t_a):
     t_a.pop(0)
     return latencias, perdidas_paquetes
 
-def metricas(promedios_latencias,promedios_perdida):
+def metricas(promedios_latencias,promedios_perdida,probabilidad_bloqueo):
     for onu in range(num_onu):
         plt.plot(promedios_latencias[:, onu], label=f'ONU {onu + 1}')
     plt.xlabel('Legadas (10^5)')
@@ -83,13 +83,20 @@ def metricas(promedios_latencias,promedios_perdida):
     plt.legend(loc='right')
     plt.show()
 
+    plt.plot(probabilidad_bloqueo, label='Probabilidad de Bloqueo')
+    plt.xlabel('Llegadas (10^5)')
+    plt.ylabel('Probabilidad de Bloqueo (%)')
+    plt.title('Probabilidad de Bloqueo por Llegadas/10^5')
+    plt.legend(loc='right')
+    plt.show()
+
 def get_id(range):
     id = rd.choice(list(range))
     return id
 def fel_users_init(rango,tasa):
     Lista = []
     for i in rango:
-        Lista.append((i, 0, randExp(tasa)[0])) ##INICIALIZAR FEL
+        Lista.append((i, 0, np.random.exponential(tasa))) ##INICIALIZAR FEL
     Lista.sort(key=itemgetter(2))
     return Lista
 def next_event(FEL):
@@ -112,7 +119,9 @@ def simulacion():
     perdidas_totales = np.zeros(num_onu)
     promedios_latencias = []
     promedios_perdida = []
-    users_total = num_onu * users_onu
+    probabilidades_bloqueo = []
+    usuarios_por_onu = np.random.randint(1, 15, size=num_onu)
+    users_total = sum(usuarios_por_onu)
     rango = range(0,users_total-1)
     lista_users=fel_users_init(rango,lamb)
     
@@ -127,16 +136,16 @@ def simulacion():
             if event_type == 0:
                 if u < canal:
                     u += 1
-                    service_time = np.random.exponential(mu) + current_time
+                    service_time = np.random.exponential(mu) 
                     lista_users = schedule_User(lista_users,service_time,id,1)
                     next_id=get_id(rango)
-                    access_time = np.random.exponential(lamb) + current_time
+                    access_time = np.random.exponential(lamb) 
                     lista_users = schedule_User(lista_users,access_time,next_id,0)
                     llegadas += 1
                     
                 else: 
                     next_id=get_id(rango)
-                    access_time = np.random.exponential(lamb) + current_time
+                    access_time = np.random.exponential(lamb) 
                     lista_users = schedule_User(lista_users,access_time,next_id,0)
                     b += 1
                     llegadas += 1
@@ -152,17 +161,17 @@ def simulacion():
             promedio_perdida = perdidas_totales / 10**5
             promedios_perdida.append(promedio_perdida.copy())
             perdidas_totales = np.zeros(num_onu)
+            block_probability = (b / llegadas) * 100
+            probabilidades_bloqueo.append(block_probability)
         
        
-    block_probability = (b / llegadas) * 100
     promedios_latencias = np.array(promedios_latencias)
     promedio_perdida = np.array(promedios_perdida)
-    print("Probabilidad de bloqueo es de", block_probability)
     print("La ONU con mayor demanda es: ",np.argmax(utility)+1)
     print("La ONU con menor demanda es: ",np.argmin(utility)+1)
     print("Se muestra la lista por máximo de demanda por iteración de cada ONU: ",utility)
     print("Se muestra la lista con las tasas de exito en cuanto a latencia de cada ONU en porcentaje: ",tasa_exito/10**4)
-    metricas(promedios_latencias,promedio_perdida)
+    metricas(promedios_latencias,promedio_perdida,probabilidades_bloqueo)
 
 
 simulacion()
