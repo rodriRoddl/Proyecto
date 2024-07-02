@@ -20,8 +20,7 @@ def dba():
     demandas_onu = np.random.lognormal(mu, sigma, num_onu)
     posicion_max = np.argmax(demandas_onu)  # Para saber cuál ONU es la que tiene mayor demanda
     demanda_total = np.sum(demandas_onu)
-    #print("Demandas de las ONU/ONT (Mbps):", demandas_onu)
-    #print("ONU con mayor demanda:", posicion_max +1)
+
     if demanda_total > ancho_banda_total: 
         variacion = np.random.uniform(0.7, 1.3, num_onu)  # Variable para variar las asignaciones
         asignaciones = (demandas_onu / demanda_total) * ancho_banda_total * variacion
@@ -30,12 +29,9 @@ def dba():
         asignaciones = demandas_onu
     asignaciones = np.minimum(asignaciones, demandas_onu)
 
-    #print("Asignaciones de ancho de banda (Mbps):", asignaciones)
+    # Manejo de latencias del sistema
     latencias = (demandas_onu / asignaciones) * lat_min + 1 + np.random.uniform(0.1, 1.0, num_onu) # calculo de latencias por procesamiento, cola, uso de algortimo, y adicion de retransmision
     latencias = latencias + distancias/200000 # considera latencia por distancia
-    #print("Suma de las asignaciones: ",asignaciones.sum())
-    #print("Latencia cada ONU:", latencias)
-
     # Manejo de utilidad de cada ONU dependiendo de la mayor demanda
     utility[posicion_max] += 1  # Sumar 1 al índice de mayor demanda
 
@@ -43,7 +39,6 @@ def dba():
     paquetes_transmitidos = asignaciones / package
     paquetes_demandados = demandas_onu / package
     perdidas_paquetes = ((paquetes_demandados - paquetes_transmitidos) / paquetes_demandados) *100
-    #print("pérdidas de paquetes de cada ONU:", perdidas_paquetes)
     return latencias, perdidas_paquetes
 
 def schedule_a(val, t_a):
@@ -111,4 +106,3 @@ def simulacion():
 
 
 simulacion()
-#dba()

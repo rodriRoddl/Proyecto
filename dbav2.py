@@ -20,12 +20,12 @@ distancias = np.random.randint(5, 40, size=num_onu)
 mu = np.log(200**2 / np.sqrt(20**2 + 200**2))
 sigma = np.sqrt(np.log(1 + (20**2 / 200**2)))
 canal=50
+
+
 def dba():
     demandas_onu = np.random.lognormal(mu, sigma, num_onu)
     posicion_max = np.argmax(demandas_onu)  # Para saber cuál ONU es la que tiene mayor demanda
     demanda_total = np.sum(demandas_onu)
-    #print("Demandas de las ONU/ONT (Mbps):", demandas_onu)
-    #print("ONU con mayor demanda:", posicion_max +1)
     if demanda_total > ancho_banda_total: 
         variacion = np.random.uniform(0.7, 1.3, num_onu)  # Variable para variar las asignaciones
         asignaciones = (demandas_onu / demanda_total) * ancho_banda_total * variacion
@@ -34,11 +34,9 @@ def dba():
         asignaciones = demandas_onu
     asignaciones = np.minimum(asignaciones, demandas_onu)
 
-    #print("Asignaciones de ancho de banda (Mbps):", asignaciones)
+    # Manejo de latencias del sistema
     latencias = (demandas_onu / asignaciones) * lat_min + 1 + np.random.uniform(0.1, 1.0, num_onu) # calculo de latencias por procesamiento, cola, uso de algortimo, y adicion de retransmision
     latencias = latencias + distancias/200000 # considera latencia por distancia
-    #print("Suma de las asignaciones: ",asignaciones.sum())
-    #print("Latencia cada ONU:", latencias)
 
     # Manejo de utilidad de cada ONU dependiendo de la mayor demanda
     utility[posicion_max] += 1  # Sumar 1 al índice de mayor demanda
@@ -47,7 +45,6 @@ def dba():
     paquetes_transmitidos = asignaciones / package
     paquetes_demandados = demandas_onu / package
     perdidas_paquetes = ((paquetes_demandados - paquetes_transmitidos) / paquetes_demandados) *100
-    #print("pérdidas de paquetes de cada ONU:", perdidas_paquetes)
     return latencias, perdidas_paquetes
 
 def schedule_a(val, t_a):
@@ -125,7 +122,7 @@ def simulacion():
     rango = range(0,users_total-1)
     lista_users=fel_users_init(rango,lamb)
     
-    while llegadas < 10**6:
+    while llegadas < 10**7:
         latencias,perdida = InputEvent(t_a)
         latencias_totales += latencias
         perdidas_totales += perdida
@@ -154,7 +151,7 @@ def simulacion():
                 llegadas += 1
         else:
             break  
-        if llegadas % 10**5 == 0:
+        if llegadas % 10**6 == 0:
             promedio_latencia = latencias_totales / 10**5
             promedios_latencias.append(promedio_latencia.copy())
             latencias_totales = np.zeros(num_onu)
